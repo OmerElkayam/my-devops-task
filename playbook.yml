@@ -1,0 +1,36 @@
+---
+- name: Deploy DevOps Project
+  hosts: all
+  become: yes  # מבצע את הפעולות כמנהל (Root)
+
+  tasks:
+    # דרישה 1: חיבור לשרת והתקנת Docker
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Docker and Compose
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: present
+
+    # דרישה 2: העתקת הקבצים לשרת
+    - name: Create project directory
+      file:
+        path: /opt/final-project
+        state: directory
+        mode: '0755'
+
+    - name: Copy project files
+      copy:
+        src: ./  # מעתיק את כל התיקייה הנוכחית
+        dest: /opt/final-project/
+        # זה יעביר את app.py, Dockerfile, docker-compose.yml, requirements.txt
+
+    # דרישה 3: הרצת הפקודה docker-compose up
+    - name: Run Docker Compose
+      command: docker-compose up -d --build
+      args:
+        chdir: /opt/final-project
